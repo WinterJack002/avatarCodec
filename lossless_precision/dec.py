@@ -51,7 +51,7 @@ def decode_frames(bitstream, quantization_step):
             decoded_residual = (decoded_residual+1)/2
         residual = decoded_residual * quantization_step
         # 重建当前帧
-        reconstructed_frames[i] = previous_reconstructed_frame + residual
+        reconstructed_frames[i] = round( previous_reconstructed_frame + residual, 6)  # 保留需要精度有效位数
         # if(len(decoded_quantized_residuals)==340):
         #     print(reconstructed_frames[i])
         # 更新上一帧重建数据
@@ -98,11 +98,11 @@ def decode_to_csv(header, file_folder, input_folder, output_folder, start_time):
                 df[header[cnt]] = decode_frames(bitstream, quantization_step)
                 cnt += 1
                 
-            dec_last = time.time()
-            dec_time = dec_last - start_time
-            print(f"编码时间: {dec_time:.4f} 秒")
-
             df.to_csv(output_file, index=False)
+    dec_last = time.time()
+    dec_time = dec_last - start_time
+    print(f"解码时间: {dec_time:.4f} 秒")
+
 
 if __name__ == "__main__":  
     # 解码bin文件并重建帧数据
