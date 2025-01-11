@@ -3,14 +3,19 @@ import numpy as np
 import math
 import csv
 import os
-from decimal import Decimal
 
-ENC_FILE = '30FPS'
-quantization_step = 1/256
-# 计算残差
-def compute_residual(current_frame, previous_reconstructed_frame):
-    return round( current_frame - previous_reconstructed_frame, 6)
+ # 假设第一个帧不编码，直接使用原始值
+previous_reconstructed_frame = [0] * 52
 
+# 帧内预测
+def predict():
+    pass
+
+# 帧间预测
+def inter_prediction(current_frame, previous_reconstructed_frame):
+    return int(current_frame - previous_reconstructed_frame)
+
+# 数据偏移
 
 # 量化残差
 def quantize(data, quantization_step):
@@ -44,72 +49,109 @@ def exponential_golomb_encode(values):
     return golombCode
 
 
-def encode_frames(frames, quantization_step, filename):
+def encode_frames(frames, quantization_step, filename, inter_flag, intra_flag):
     with open(filename, 'ab+') as f:
         # f.write(struct.pack('d', frames[0]))  # 负数
         bitstream = ''
 
-        # 假设第一个帧不编码，直接使用原始值
-        previous_reconstructed_frame = 0.0
         for i in range(len(frames)):
-            # 计算残差
-            residual = compute_residual(frames[i], previous_reconstructed_frame)
-            # print(residual)
+            if intra_flag:
+                
+                if inter_flag:
+                    # 帧间预测
+                    residual = inter_prediction(frames[i], previous_reconstructed_frame[i])
+                else:
+                    pass
+                    # 
+            else:
+                
+                if inter_flag:
+                    # 帧间预测
+                    residual = inter_prediction(frames[i], previous_reconstructed_frame[i])
+                else:
+                    residual = frames[i]
+            
+           
             # 量化残差
             quantized_residual = quantize(residual, quantization_step)
             # 指数哥伦布编码
             encoded_residual = exponential_golomb_encode(quantized_residual)
             bitstream += encoded_residual
-            # 重建下一帧
-            if quantized_residual % 2 == 0:
-                quantized_residual = (-quantized_residual) / 2
-            else:
-                quantized_residual = (quantized_residual + 1) / 2
+            
+            # 重建当前帧
+            if intra_flag:
+                
+                if inter_flag:
+                    # 重建下一帧
+                    if quantized_residual % 2 == 0:
+                        quantized_residual = int((-quantized_residual) / 2)
+                    else:
+                        quantized_residual = int((quantized_residual + 1) / 2)
 
-            if i == 0:
-                previous_reconstructed_frame = 0 + quantized_residual * quantization_step
+                    # if i == 0:
+                    #     previous_reconstructed_frame[i] = 0 + quantized_residual * quantization_step
+                    # else:
+                    previous_reconstructed_frame[i] = previous_reconstructed_frame[i] + quantized_residual * quantization_step
+                else:
+                    pass
             else:
-                previous_reconstructed_frame = round( previous_reconstructed_frame + quantized_residual * quantization_step, 6)
+                
+                if inter_flag:
+                    # 重建下一帧
+                    if quantized_residual % 2 == 0:
+                        quantized_residual = int((-quantized_residual) / 2)
+                    else:
+                        quantized_residual = int((quantized_residual + 1) / 2)
 
+                    # if i == 0:
+                    #     previous_reconstructed_frame = 0 + quantized_residual * quantization_step
+                    # else:
+                    previous_reconstructed_frame[i] = previous_reconstructed_frame[i] + quantized_residual * quantization_step
+                else:
+                    pass
             # 确保 bitstream 的长度是8的倍数
+
         while len(bitstream) % 8 != 0:
             bitstream += '0'
         write_bytes_len = math.ceil(len(bitstream) / 8)
         f.write(struct.pack('I', write_bytes_len))
         # print("compute cnt: ", write_bytes_len)
-        byte_array = bytearray()
-        write_cnt = 0
-        for i in range(0, len(bitstream), 8):
-            byte = bitstream[i:i + 8]
-            byte_array.append(int(byte, 2))
-            write_cnt += 1
+        byte_array = int(bitstream, 2).to_bytes(write_bytes_len, 'big')
+        
+        # write_cnt = 0
+        # for i in range(0, len(bitstream), 8):
+        #     byte = bitstream[i:i + 8]
+        #     byte_array.append(int(byte, 2))
+        #     write_cnt += 1
         # print("write_cnt: ", write_cnt)
-        if write_bytes_len != write_cnt:
-            print("error!!!")
+        # if write_bytes_len != write_cnt:
+        #     print("error!!!")
         f.write(byte_array)
 
+# 左右预测
+def predict_LeftR():
+    pass
 
-def encode_from_csv(input_folder, qs, output_folder):
-    quantization_step = 1/qs
+
+def encode_from_csv(input_folder, output_folder, QP, n=6, inter_flag=0, intra_flag=0):
+    
+    bs_scale = 10 ** n
     csv_files = os.listdir(input_folder)
     os.makedirs(output_folder, exist_ok=True)
     for csv_file in csv_files:
-        output_file = os.path.join(output_folder, str(qs)+'_'+csv_file.split('.')[0] + '.bin')
+        output_file = os.path.join(output_folder, 'QP' + str(QP)+'_'+csv_file.split('.')[0] + '.bin')
+        quantization_step = 2 ** QP
         with open(os.path.join(input_folder, csv_file), newline='') as csvfile:
             reader = csv.reader(csvfile)
             data = list(reader)
 
-        # 提取每列数据（从第三列开始），并将字符串转换为浮点数
-        columns = []
-        for col_index in range(2, len(data[0])):  # 从第三列开始
-            column_data = [float(row[col_index]) for row in data[1:]]  # 从第二行开始读取数据
-            columns.append(column_data)
+        rows = []  # 用于存储行数据
+        for row_index in range(1, len(data)):  # 从第二行开始
+            row_data = ([int(float(value) * bs_scale) for value in data[row_index][2:]])
+            rows.append(row_data)
 
-        #with open(output_file, 'ab+') as f:
-            # print("frames: ", len(columns[0]))
-            #f.write(struct.pack('I', len(columns[0])))  # 一列数据，帧数(一种blend shape weights的帧数写成二进制格式)
-        for col in columns:
-            encode_frames(col, quantization_step, output_file)
+        for row in rows:
+            encode_frames(row, quantization_step, output_file, inter_flag, intra_flag)
 
 if __name__ == "__main__":
     # 示例帧数据
