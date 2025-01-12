@@ -33,7 +33,7 @@ if __name__ == '__main__':
     
     # 预测模式
     inter_flag = 1
-    intra_flag = 0
+    intra_flag = 1
 
     start_time = time.time() # 记录运行时间
 
@@ -48,10 +48,11 @@ if __name__ == '__main__':
         for qs in QP:
             # encode
             encode_from_csv(enc_input_folder, enc_output_folder, qs, n, inter_flag, intra_flag)
-
+        print("编码结束！")
         # # encode time cost
         # enc_last = time.time()
         # enc_time = enc_last - start_time
         # print(f"编码时间: {enc_time:.4f} 秒")
         # decode
         decode_to_csv(csv_header, enc_input_folder, enc_output_folder,dec_output_folder, n, inter_flag, intra_flag)
+        print("解码结束")
