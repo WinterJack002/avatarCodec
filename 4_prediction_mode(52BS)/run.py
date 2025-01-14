@@ -22,7 +22,8 @@ if __name__ == '__main__':
 
     # extract_frame = [30, 10, 6, 3, 2, 1]
     extract_frame = [1]
-    QP = [11, 13, 14, 15] # 对应[512, 128, 64, 32]
+    # QP = [11, 13, 14, 15] # 对应[512, 128, 64, 32]
+    QP = [0]
     # quantization_step = [1953, 7812, 15625, 31250]
     # quantization_step = (int(2 ** value) for value in QP)
     # 尺度因子
@@ -30,36 +31,9 @@ if __name__ == '__main__':
     # shift = []
 
     # reference mapping
-    # bs_reference = [
-    #     [0, 1, 2,  3, 4,  5,  6,  15, 16, 18, 19, 20, 21, 22, 23, 25, 27, 29, 31, 32, 33, 35, 37, 39, 41, 44, 46, 47, 49, 51],
-    #     [7, 8, 10, 9, 11, 12, 13, -1, -1, -1, -1, -1, -1, -1, 24, 26, 28, 30, -1, -1, 34, 36, 38, 40, 42, 45, -1, 48, 50, -1],
-    #     [-1, -1, -1, -1,  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14, -1, -1, -1, -1, 17, -1, -1, 43, -1, -1, -1, -1]   
-    # ]
-#     bs_reference_dict = {
-#     '0': 7,
-#     '1': 8,
-#     '2': 10,
-#     '3': 9,
-#     '4': 11,
-#     '5': 12,
-#     '6': 13,
-#     '14': 29,
-#     '15': 'none',
-#     '16': 'none',
-#     '17': 37,
-#     '18': 'none',
-#     '19': 'none',
-#     '20': 'none',
-#     '21': 'none',
-#     '22': 'none',
-#     '23': 24,
-#     '25': 26,
-#     '27': 28,
-#     '29': 30,
-#     '30': 31
-# }
+    
     # 预测模式
-    inter_flag = 1
+    inter_flag = 0
     intra_flag = 0
 
     start_time = time.time() # 记录运行时间
@@ -75,10 +49,11 @@ if __name__ == '__main__':
         for qs in QP:
             # encode
             encode_from_csv(enc_input_folder, enc_output_folder, qs, n, inter_flag, intra_flag)
-
+        print("编码结束！")
         # # encode time cost
         # enc_last = time.time()
         # enc_time = enc_last - start_time
         # print(f"编码时间: {enc_time:.4f} 秒")
         # decode
         decode_to_csv(csv_header, enc_input_folder, enc_output_folder,dec_output_folder, n, inter_flag, intra_flag)
+        print("解码结束")

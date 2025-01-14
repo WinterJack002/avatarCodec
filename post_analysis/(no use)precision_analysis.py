@@ -1,9 +1,10 @@
 import os
 import csv
+from decimal import Decimal, ROUND_DOWN
 
 # 定义输入目录和文件
-input_dir = r'F:\weizh2023\Avatar\研二上\新建文件夹\pre-MPEG-149\code\lossless_precision\dec\30FPS'
-output_suffix = '_rounded'
+input_dir = r'C:\Users\winter\Desktop\MPEG149-data\cut6'
+output_suffix = '_cut6'
 
 def round_csv_data(filename):
     input_file = os.path.join(input_dir, filename)
@@ -18,7 +19,11 @@ def round_csv_data(filename):
         for col_idx in range(2, len(rows[row_idx])):  # 从第三列（索引2）开始
             try:
                 # 四舍五入到小数点后6位
-                rows[row_idx][col_idx] = round(float(rows[row_idx][col_idx]), 6)
+                # rows[row_idx][col_idx] = round(float(rows[row_idx][col_idx]), 6) # 四舍五入保留6位
+                # rows[row_idx][col_idx] = float(f"{float(rows[row_idx][col_idx]):.6f}") # 截断取前6位小数(失效)
+                # rows[row_idx][col_idx] = int(rows[row_idx][col_idx] * 10**6) / 10**6 # 速度极慢
+                rows[row_idx][col_idx] = Decimal(str(rows[row_idx][col_idx])).quantize(Decimal('0.000001'), rounding=ROUND_DOWN)
+
             except ValueError:
                 # 如果不是数值，跳过该项
                 continue
