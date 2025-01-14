@@ -22,7 +22,8 @@ if __name__ == '__main__':
 
     # extract_frame = [30, 10, 6, 3, 2, 1]
     extract_frame = [1]
-    QP = [11, 13, 14, 15] # 对应[512, 128, 64, 32]
+    # QP = [11, 13, 14, 15] # 对应[512, 128, 64, 32]
+    QP = [0]
     # quantization_step = [1953, 7812, 15625, 31250]
     # quantization_step = (int(2 ** value) for value in QP)
     # 尺度因子
@@ -32,8 +33,8 @@ if __name__ == '__main__':
     # reference mapping
     
     # 预测模式
-    inter_flag = 1
-    intra_flag = 1
+    inter_flag = 0
+    intra_flag = 0
 
     start_time = time.time() # 记录运行时间
 

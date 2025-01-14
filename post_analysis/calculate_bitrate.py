@@ -28,10 +28,11 @@ def get_bit_num(input_floder, by_num, b_num):
             file_path = os.path.join(input_floder, filename)
             # 获取文件大小（字节）
             file_size_bytes = os.path.getsize(file_path)
-
-            by_num.append(file_size_bytes)
+            # 减去每帧字节数
+            file_size_bytes_minus = file_size_bytes - 4 * 581 # 581是帧数
+            by_num.append(file_size_bytes_minus)
             # 将文件大小转换为比特数并添加到列表中
-            b_num.append(file_size_bytes * 8)
+            b_num.append(file_size_bytes_minus * 8)
 
 # frame_dir = r'C:\Users\winter\Desktop\DCC_avatar\True use\male_talking\csv\26BS\解码'
 # bin_dir = r'C:\Users\winter\Desktop\DCC_avatar\True use\male_talking\csv\26BS\二进制'
@@ -45,8 +46,8 @@ def get_bit_num(input_floder, by_num, b_num):
 # frame_dir = r'C:\Users\winter\Desktop\DCC_avatar\True use\female_talking\csv\55BS\解码'
 # bin_dir = r'C:\Users\winter\Desktop\DCC_avatar\True use\female_talking\csv\55BS\二进制'
 
-frame_dir = r'F:\weizh2023\Avatar\研二上\新建文件夹\pre-MPEG-149\DATA\无损编码\step1(取整)\dec'
-bin_dir = r'F:\weizh2023\Avatar\研二上\新建文件夹\pre-MPEG-149\DATA\无损编码\step1(取整)\bin'
+frame_dir = r'C:\Users\winter\Desktop\MPEG149-data\lossless\00\dec'
+bin_dir = r'C:\Users\winter\Desktop\MPEG149-data\lossless\00\bin'
 
 # frame_dir = r'C:\Users\winter\Desktop\DCC_avatar\True use\emotion\csv\55BS\解码'
 # bin_dir = r'C:\Users\winter\Desktop\DCC_avatar\True use\emotion\csv\55BS\二进制'
@@ -57,8 +58,8 @@ bin_dir = r'F:\weizh2023\Avatar\研二上\新建文件夹\pre-MPEG-149\DATA\无�
 
 # 定义要读取的子目录列表
 # sub_dirs = ['30FPS', '15FPS', '10FPS', '5FPS', '3FPS', '1FPS']
-sub_dirs = ['30FPS']
-csv_file_path = 'bit_rate_output.csv'
+# sub_dirs = ['30FPS']
+csv_file_path = '10_bit_rate_output.csv'
 
 # 遍历每个子目录
 name = []
@@ -67,18 +68,20 @@ byte_num = []
 bit_num = []
 time = []
 # 统计帧数
-for sub_dir in sub_dirs:
-    # 构建子目录的完整路径
-    fps_str = sub_dir[:sub_dir.find('FPS')]  # 提取FPS前面的部分
-    fps = int(fps_str)  # 转换为整数, 获得帧数
-    sub_dir_path = os.path.join(frame_dir, sub_dir)
-    get_frames_num(sub_dir_path, name, frame_num, fps, time)
+# for sub_dir in sub_dirs:
+# 构建子目录的完整路径
+# fps_str = sub_dir[:sub_dir.find('FPS')]  # 提取FPS前面的部分
+# fps = int(fps_str)  # 转换为整数, 获得帧数
+fps = 30
+# sub_dir_path = os.path.join(frame_dir, sub_dir)
+sub_dir_path = frame_dir
+get_frames_num(sub_dir_path, name, frame_num, fps, time)
 
 # 统计比特数
-for sub_dir in sub_dirs:
+# for sub_dir in sub_dirs:
     # 构建子目录的完整路径
-    sub_dir_path = os.path.join(bin_dir, sub_dir)
-    get_bit_num(sub_dir_path, byte_num, bit_num)
+# sub_dir_path = os.path.join(bin_dir, sub_dir)
+get_bit_num(bin_dir, byte_num, bit_num)
 
 bit_rate = [x / y for x, y in zip(bit_num, time)]
 
